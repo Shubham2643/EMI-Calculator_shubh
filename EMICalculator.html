@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMI Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            min-height: 100vh;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #171515;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .header {
+            background: #f8f9fa;
+            padding: 24px 30px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .left-column {
+            flex: 1;
+            min-width: 350px;
+            padding: 30px;
+            background: #fff;
+            border-right: 1px solid #eaeaea;
+        }
+        
+        .right-column {
+            flex: 1;
+            max-width: 550px;
+            padding: 30px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .label {
+            font-size: 16px;
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        .value-display {
+            font-size: 16px;
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .slider-container {
+            width: 100%;
+            margin: 15px 0 5px 0;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background: #28a745;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            background: #28a745;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .limits {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .results-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .result-label {
+            font-size: 16px;
+            color: #495057;
+        }
+        
+        .result-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #28a745;
+        }
+        
+        .chart-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .chart-container {
+            height: 280px;
+            margin: 15px 0;
+        }
+        
+        .chart-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .chart-btn {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .chart-btn.active {
+            background:  #0978e7;
+        }
+        
+        .chart-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .amortization-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .amortization-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .view-buttons {
+            display: flex;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .view-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+        }
+        
+        .view-btn.active {
+            background: #0978e7;
+            color: white;
+        }
+        
+        .amortization-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .amortization-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 44px;
+            z-index: 9;
+        }
+        
+        .amortization-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .amortization-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .toggle-button {
+            width: 50%;
+            padding: 13px 26px;
+            background: #0978e7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+        
+        .toggle-button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .left-column, .right-column {
+                border-right: none;
+                border-bottom: 1px solid #eaeaea;
+            }
+            
+            .header {
+                padding: 20px;
+                font-size: 24px;
+            }
+            
+            .emi-value {
+                font-size: 32px;
+            }
+            
+            .amortization-section {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">EMI Calculator</div>
+        
+        <div class="main-content">
+            <div class="left-column">
+                <div class="input-section">
+                    <div class="input-group">
+                        <div class="input-header">
+                            <div class="label">Loan Amount</div>
+                            <div class="value-display" id="loanAmountValue">₹4,00,000</div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="loanAmountSlider" min="10000" max="10000000" value="400000" step="10000"/>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="input-header">
+                            <div class="label">Interest Rate (p.a)</div>
+                            <div class="value-display" id="interestRateValue">5.4%</div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="interestRateSlider" min="1" max="20" value="5.4" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="input-header">
+                            <div class="label">Loan Tenure</div>
+                            <div class="value-display" id="loanTenureValue">7 Years</div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="loanTenureSlider" min="1" max="30" value="7">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="results-section">
+                    <div class="result-row">
+                        <div class="result-label">Monthly EMI</div>
+                        <div class="result-value" id="monthlyEMI">₹5,729</div>
+                    </div>
+                    
+                    <div class="result-row">
+                        <div class="result-label">Principal Amount</div>
+                        <div class="result-value" id="principalAmount">₹4,00,000</div>
+                    </div>
+                    
+                    <div class="result-row">
+                        <div class="result-label">Total Interest</div>
+                        <div class="result-value" id="totalInterest">₹81,240</div>
+                    </div>
+                    
+                    <div class="result-row">
+                        <div class="result-label">Total Amount</div>
+                        <div class="result-value" id="totalAmount">₹4,81,240</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-column">
+                <div class="chart-section" id="chartSection">
+                    <div class="chart-container">
+                        <canvas id="emiChart"></canvas>
+                    </div>
+                    <div class="chart-buttons">
+                        <button class="chart-btn active" id="pieChartBtn">Pie Chart</button>
+                        <button class="chart-btn" id="barChartBtn">Bar Chart</button>
+                    </div>
+                </div>
+                
+                <div class="amortization-section" id="amortizationSection">
+                    <div class="amortization-title">Payment Schedule</div>
+                    
+                    <div class="view-buttons">
+                        <button class="view-btn active" id="yearlyBtn">Yearly</button>
+                        <button class="view-btn" id="monthlyBtn">Monthly</button>
+                    </div>
+                    
+                    <div>
+                        <table class="amortization-table" id="amortizationTable">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Principal</th>
+                                    <th>Interest</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="amortizationBody">
+                                <!-- Data will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <button class="toggle-button" id="toggleViewBtn">Show Amortization</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const elements = {
+            sliders: {
+                amount: document.getElementById('loanAmountSlider'),
+                rate: document.getElementById('interestRateSlider'),
+                tenure: document.getElementById('loanTenureSlider')
+            },
+            displays: {
+                amount: document.getElementById('loanAmountValue'),
+                rate: document.getElementById('interestRateValue'),
+                tenure: document.getElementById('loanTenureValue'),
+                emi: document.getElementById('monthlyEMI'),
+                principal: document.getElementById('principalAmount'),
+                interest: document.getElementById('totalInterest'),
+                total: document.getElementById('totalAmount')
+            },
+            chart: document.getElementById('emiChart'),
+            sections: {
+                chart: document.getElementById('chartSection'),
+                amortization: document.getElementById('amortizationSection')
+            },
+            buttons: {
+                pieChart: document.getElementById('pieChartBtn'),
+                barChart: document.getElementById('barChartBtn'),
+                yearly: document.getElementById('yearlyBtn'),
+                monthly: document.getElementById('monthlyBtn'),
+                toggleView: document.getElementById('toggleViewBtn')
+            },
+            tableBody: document.getElementById('amortizationBody')
+        };
+
+        // State
+        let chart = null;
+        let isAmortizationView = false;
+        let chartType = 'pie';
+
+        // Format currency
+        function formatMoney(amount) {
+            return '₹' + amount.toLocaleString('en-IN', {
+                maximumFractionDigits: 0
+            });
+        }
+
+        // Calculate EMI with precise formula
+        function calculateEMI(principal, rate, years) {
+            const monthlyRate = rate / 12 / 100;
+            const months = years * 12;
+            
+            // Precise EMI calculation formula
+            if (monthlyRate === 0) {
+                const emi = principal / months;
+                const totalAmount = emi * months;
+                const totalInterest = totalAmount - principal;
+                
+                return {
+                    emi: Math.round(emi),
+                    totalAmount: Math.round(totalAmount),
+                    totalInterest: Math.round(totalInterest)
+                };
+            }
+            
+            const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, months) / 
+                        (Math.pow(1 + monthlyRate, months) - 1);
+            
+            const totalAmount = emi * months;
+            const totalInterest = totalAmount - principal;
+            
+            return {
+                emi: Math.round(emi * 100) / 100,
+                totalAmount: Math.round(totalAmount * 100) / 100,
+                totalInterest: Math.round(totalInterest * 100) / 100
+            };
+        }
+
+        // Calculate amortization schedule
+        function calculateAmortizationSchedule(principal, rate, years, emi) {
+            const monthlyRate = rate / 12 / 100;
+            const months = years * 12;
+            let balance = principal;
+            const schedule = [];
+            
+            for (let month = 1; month <= months; month++) {
+                const interest = balance * monthlyRate;
+                const principalPaid = emi - interest;
+                
+                // For the last month, adjust to ensure balance becomes 0
+                let actualPrincipalPaid = principalPaid;
+                let actualEMI = emi;
+                
+                if (month === months) {
+                    actualPrincipalPaid = balance;
+                    actualEMI = interest + balance;
+                }
+                
+                balance -= actualPrincipalPaid;
+                if (balance < 0) balance = 0;
+                
+                schedule.push({
+                    month,
+                    principalPaid: Math.round(actualPrincipalPaid * 100) / 100,
+                    interestPaid: Math.round(interest * 100) / 100,
+                    balance: Math.round(balance * 100) / 100,
+                    totalPayment: Math.round(actualEMI * 100) / 100
+                });
+            }
+            
+            return schedule;
+        }
+
+        // Update all displays
+        function updateDisplay() {
+            const principal = parseFloat(elements.sliders.amount.value);
+            const rate = parseFloat(elements.sliders.rate.value);
+            const years = parseFloat(elements.sliders.tenure.value);
+            
+            // Update input displays
+            elements.displays.amount.textContent = formatMoney(principal);
+            elements.displays.rate.textContent = rate.toFixed(1) + '%';
+            elements.displays.tenure.textContent = years + ' Year' + (years !== 1 ? 's' : '');
+            
+            // Calculate and update results
+            const result = calculateEMI(principal, rate, years);
+            
+            elements.displays.emi.textContent = formatMoney(result.emi);
+            elements.displays.principal.textContent = formatMoney(principal);
+            elements.displays.interest.textContent = formatMoney(result.totalInterest);
+            elements.displays.total.textContent = formatMoney(result.totalAmount);
+            
+            // Update chart or amortization table
+            if (isAmortizationView) {
+                updateAmortizationTable(principal, rate, years, result.emi);
+            } else {
+                updateChart(principal, result.totalInterest);
+            }
+            
+            return { principal, rate, years, ...result };
+        }
+
+        // Update chart
+        function updateChart(principal, interest) {
+            const ctx = elements.chart.getContext('2d');
+            
+            // Destroy existing chart
+            if (chart) {
+                chart.destroy();
+            }
+            
+            // Create new chart
+            if (chartType === 'pie') {
+                chart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Principal Amount', 'Interest Amount'],
+                        datasets: [{
+                            data: [principal, interest],
+                            backgroundColor: ['#caf6f9', '#0978e7'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const total = principal + interest;
+                                        const percent = Math.round((value / total) * 100);
+                                        return `${context.label}: ${formatMoney(value)} (${percent}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Loan Breakdown'],
+                        datasets: [
+                            {
+                                label: 'Principal Amount',
+                                data: [principal],
+                                backgroundColor: '#caf6f9'
+                            },
+                            {
+                                label: 'Interest Amount',
+                                data: [interest],
+                                backgroundColor: '#0978e7'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₹' + value.toLocaleString('en-IN');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Update amortization table
+        function updateAmortizationTable(principal, rate, years, emi) {
+            // Calculate complete amortization schedule
+            const schedule = calculateAmortizationSchedule(principal, rate, years, emi);
+            
+            // Clear table
+            elements.tableBody.innerHTML = '';
+            
+            const isYearly = elements.buttons.yearly.classList.contains('active');
+            
+            if (isYearly) {
+                // Yearly view - aggregate monthly data into yearly
+                const monthsPerYear = 12;
+                const totalYears = Math.ceil(schedule.length / monthsPerYear);
+                
+                for (let year = 1; year <= totalYears; year++) {
+                    const startMonth = (year - 1) * monthsPerYear;
+                    const endMonth = Math.min(year * monthsPerYear, schedule.length);
+                    
+                    let yearPrincipal = 0;
+                    let yearInterest = 0;
+                    let yearEndBalance = 0;
+                    
+                    for (let i = startMonth; i < endMonth; i++) {
+                        const monthData = schedule[i];
+                        yearPrincipal += monthData.principalPaid;
+                        yearInterest += monthData.interestPaid;
+                        yearEndBalance = monthData.balance;
+                    }
+                    
+                    const row = `<tr>
+                        <td>Year ${year}</td>
+                        <td>${formatMoney(yearPrincipal)}</td>
+                        <td>${formatMoney(yearInterest)}</td>
+                        <td>${formatMoney(yearEndBalance)}</td>
+                    </tr>`;
+                    elements.tableBody.innerHTML += row;
+                }
+            } else {
+                // Monthly view - show first 12 months or all if less than 12
+                const monthsToShow = Math.min(12, schedule.length);
+                
+                for (let month = 0; month < monthsToShow; month++) {
+                    const monthData = schedule[month];
+                    const row = `<tr>
+                        <td>Month ${month + 1}</td>
+                        <td>${formatMoney(monthData.principalPaid)}</td>
+                        <td>${formatMoney(monthData.interestPaid)}</td>
+                        <td>${formatMoney(monthData.balance)}</td>
+                    </tr>`;
+                    elements.tableBody.innerHTML += row;
+                }
+            }
+        }
+
+        // Toggle between chart and amortization
+        function toggleView() {
+            isAmortizationView = !isAmortizationView;
+            
+            if (isAmortizationView) {
+                elements.sections.chart.style.display = 'none';
+                elements.sections.amortization.style.display = 'block';
+                elements.buttons.toggleView.textContent = 'Show Chart';
+                updateDisplay();
+            } else {
+                elements.sections.chart.style.display = 'block';
+                elements.sections.amortization.style.display = 'none';
+                elements.buttons.toggleView.textContent = 'Show Amortization';
+                updateDisplay();
+            }
+        }
+
+        // Event Listeners
+        // Slider changes
+        elements.sliders.amount.addEventListener('input', updateDisplay);
+        elements.sliders.rate.addEventListener('input', updateDisplay);
+        elements.sliders.tenure.addEventListener('input', updateDisplay);
+
+        // Chart type buttons
+        elements.buttons.pieChart.addEventListener('click', function() {
+            chartType = 'pie';
+            elements.buttons.pieChart.classList.add('active');
+            elements.buttons.barChart.classList.remove('active');
+            if (!isAmortizationView) updateDisplay();
+        });
+
+        elements.buttons.barChart.addEventListener('click', function() {
+            chartType = 'bar';
+            elements.buttons.barChart.classList.add('active');
+            elements.buttons.pieChart.classList.remove('active');
+            if (!isAmortizationView) updateDisplay();
+        });
+
+        // Amortization view buttons
+        elements.buttons.yearly.addEventListener('click', function() {
+            elements.buttons.yearly.classList.add('active');
+            elements.buttons.monthly.classList.remove('active');
+            if (isAmortizationView) updateDisplay();
+        });
+
+        elements.buttons.monthly.addEventListener('click', function() {
+            elements.buttons.monthly.classList.add('active');
+            elements.buttons.yearly.classList.remove('active');
+            if (isAmortizationView) updateDisplay();
+        });
+
+        // Toggle view button
+        elements.buttons.toggleView.addEventListener('click', toggleView);
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
